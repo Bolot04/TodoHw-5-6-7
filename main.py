@@ -30,12 +30,18 @@ def main(page: ft.Page):
             main_db.update_task(task_id=task_id, new_task=task_field.value)
             task_field.read_only = True
             task_field.update()
+        
+        def deleted_tasks(_):
+            main_db.delete_task(task_id)
+            load_task()
+
+        deleted_button = ft.IconButton(icon=ft.Icons.DELETE, icon_color=ft.Colors.RED, on_click=deleted_tasks)
 
         save_button = ft.IconButton(icon=ft.Icons.SAVE_ALT_ROUNDED, on_click=save_task)
 
         task_field = ft.TextField(value=task_text, read_only=True, expand=True, on_submit=save_task)
 
-        return ft.Row([checkbox, task_field, edit_button, save_button])
+        return ft.Row([checkbox, task_field, edit_button, save_button, deleted_button])
     
     def toggle_task(task_id, is_completed):
         print(f"{task_id} - {is_completed}")
@@ -52,12 +58,24 @@ def main(page: ft.Page):
             task_input.value = None
             page.update()
 
+    def set_filter(filter_value):
+        nonlocal filter_type
+        filter_type = filter_value
+        load_task()
+
+
+    filter_buttons = ft.Row([
+        ft.ElevatedButton('Все задачи', on_click=lambda e: set_filter('all'), icon=ft.Icons.ALL_INBOX, icon_color=ft.Colors.YELLOW),
+        ft.ElevatedButton('В ожидании...', on_click=lambda e: set_filter('uncompleted'), icon=ft.Icons.WATCH_LATER, icon_color=ft.Colors.ORANGE),
+        ft.ElevatedButton('Готово', on_click=lambda e: set_filter('completed'), icon=ft.Icons.CHECK_BOX, icon_color=ft.Colors.GREEN)
+    ], alignment=ft.MainAxisAlignment.SPACE_AROUND)
+
     task_input = ft.TextField(label='Введите задачу', expand=True, on_submit=add_task)
     task_input_button = ft.IconButton(icon=ft.Icons.SEND, on_click=add_task)
 
     main_objects = ft.Row([task_input, task_input_button])
 
-    page.add(main_objects, task_list)
+    page.add(main_objects, filter_buttons, task_list)
     load_task()
 
 
